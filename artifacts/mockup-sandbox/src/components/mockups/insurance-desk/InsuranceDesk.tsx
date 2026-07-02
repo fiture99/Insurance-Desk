@@ -1,50 +1,62 @@
 import React, { useState } from "react";
 import {
   Plus, Search, Check, FileText, Users, LayoutGrid, X,
-  AlertCircle, ChevronRight, Lock, Unlock, LogOut, ShieldCheck, Eye, EyeOff, UserPlus, Trash2
+  AlertCircle, ChevronRight, Lock, Unlock, LogOut, ShieldCheck,
+  Eye, EyeOff, UserPlus, Trash2, Pencil, Save
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type Role = "admin" | "staff";
+type Role      = "admin" | "staff";
 type StaffUser = { id: string; username: string; password: string; displayName: string; role: Role; createdAt: string };
-type Member   = { id: string; name: string; company: string; role: string; status: string };
-type Request  = { id: string; company: string; type: string; memberName: string; memberId: string; reason: string; dateReceived: string; stage: string; notes: string };
+type Member    = { id: string; policyNo: string; name: string; company: string; role: string; status: string };
+type Request   = { id: string; company: string; type: string; memberName: string; policyNo: string; reason: string; dateReceived: string; stage: string; notes: string };
 
 // ── Seed data ──────────────────────────────────────────────────────────────
 
 const seedUsers: StaffUser[] = [
-  { id: "u-1", username: "admin",   password: "admin123",  displayName: "Administrator", role: "admin", createdAt: "2025-01-01" },
-  { id: "u-2", username: "fatou",   password: "desk2025",  displayName: "Fatou Jallow",  role: "staff", createdAt: "2025-03-12" },
+  { id: "u-1", username: "admin", password: "admin123", displayName: "Administrator", role: "admin", createdAt: "2025-01-01" },
+  { id: "u-2", username: "fatou", password: "desk2025",  displayName: "Fatou Jallow",  role: "staff", createdAt: "2025-03-12" },
 ];
 
 const seedMembers: Member[] = [
-  { id: "2025/B", name: "Sarjo Badjie",       company: "GNPC", role: "Dependent", status: "Active" },
-  { id: "2154/B", name: "Asmaw K. Sanyang",   company: "GNPC", role: "Dependent", status: "Active" },
-  { id: "1180/P", name: "Momodou Ceesay",     company: "GNPC", role: "Principal", status: "Active" },
+  { id: "m-1", policyNo: "GNPC/2025/B", name: "Sarjo Badjie",     company: "GNPC", role: "Dependent", status: "Active" },
+  { id: "m-2", policyNo: "GNPC/2154/B", name: "Asmaw K. Sanyang", company: "GNPC", role: "Dependent", status: "Active" },
+  { id: "m-3", policyNo: "GNPC/1180/P", name: "Momodou Ceesay",   company: "GNPC", role: "Principal", status: "Active" },
 ];
 
 const seedRequests: Request[] = [
-  { id: "REQ-1001", company: "GNPC", type: "Remove dependent", memberName: "Sarjo Badjie",     memberId: "2025/B", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received", notes: "Formal letter to follow. Email treated as authorization." },
-  { id: "REQ-1002", company: "GNPC", type: "Remove dependent", memberName: "Asmaw K. Sanyang", memberId: "2154/B", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received", notes: "Formal letter to follow. Email treated as authorization." },
+  { id: "REQ-1001", company: "GNPC", type: "Remove dependent", memberName: "Sarjo Badjie",     policyNo: "GNPC/2025/B", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received", notes: "Formal letter to follow. Email treated as authorization." },
+  { id: "REQ-1002", company: "GNPC", type: "Remove dependent", memberName: "Asmaw K. Sanyang", policyNo: "GNPC/2154/B", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received", notes: "Formal letter to follow. Email treated as authorization." },
 ];
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const STAGES       = ["Received", "Reviewed", "Actioned", "Confirmed"];
+const STAGES        = ["Received", "Reviewed", "Actioned", "Confirmed"];
 const REQUEST_TYPES = ["Add dependent", "Remove dependent", "Update details", "Reinstate"];
+const ROLES_MEMBER  = ["Principal", "Dependent", "Spouse", "Child"];
 const STAGE_COLOR: Record<string, string> = {
   Received: "#E3993A", Reviewed: "#3D7EA6", Actioned: "#0E7A77", Confirmed: "#55606B",
 };
 
 // ── Shared styles ──────────────────────────────────────────────────────────
 
-const inputStyle: React.CSSProperties = {
+const input: React.CSSProperties = {
   padding: "8px 10px", fontSize: 13.5, border: "1px solid #D7DBE0",
   borderRadius: 7, fontFamily: "inherit", color: "#1B2A41", background: "#fff", width: "100%",
 };
 
-// ── Tiny atoms ─────────────────────────────────────────────────────────────
+const btnPrimary: React.CSSProperties = {
+  border: "none", background: "#0E7A77", color: "#fff",
+  borderRadius: 7, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer",
+};
+
+const btnSecondary: React.CSSProperties = {
+  border: "1px solid #D7DBE0", background: "#fff",
+  borderRadius: 7, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+};
+
+// ── Atoms ──────────────────────────────────────────────────────────────────
 
 function Badge({ children, color = "#55606B", bg = "#F0F1F3" }: { children: React.ReactNode; color?: string; bg?: string }) {
   return <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, color, background: bg, borderRadius: 5, padding: "3px 8px", letterSpacing: 0.2 }}>{children}</span>;
@@ -66,19 +78,8 @@ function PasswordInput({ value, onChange, placeholder, autoFocus }: { value: str
   const [show, setShow] = useState(false);
   return (
     <div style={{ position: "relative" }}>
-      <input
-        type={show ? "text" : "password"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoFocus={autoFocus}
-        style={{ ...inputStyle, paddingRight: 36 }}
-      />
-      <button
-        type="button"
-        onClick={() => setShow((s) => !s)}
-        style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#9AA2AB", cursor: "pointer", padding: 0, display: "flex" }}
-      >
+      <input type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus} style={{ ...input, paddingRight: 36 }} />
+      <button type="button" onClick={() => setShow((s) => !s)} style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#9AA2AB", cursor: "pointer", padding: 0, display: "flex" }}>
         {show ? <EyeOff size={15} /> : <Eye size={15} />}
       </button>
     </div>
@@ -113,6 +114,176 @@ function StageRail({ stage, compact }: { stage: string; compact?: boolean }) {
   );
 }
 
+// ── Member modal (add / edit) ──────────────────────────────────────────────
+
+type MemberForm = { policyNo: string; name: string; company: string; role: string; status: string };
+
+function MemberModal({
+  initial, existingPolicies, onClose, onSave,
+}: {
+  initial?: Member;
+  existingPolicies: string[];
+  onClose: () => void;
+  onSave: (f: MemberForm) => void;
+}) {
+  const [form, setForm] = useState<MemberForm>({
+    policyNo: initial?.policyNo ?? "",
+    name:     initial?.name     ?? "",
+    company:  initial?.company  ?? "GNPC",
+    role:     initial?.role     ?? "Dependent",
+    status:   initial?.status   ?? "Active",
+  });
+  const [err, setErr] = useState("");
+  const set = (k: keyof MemberForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const isEdit = !!initial;
+
+  function submit() {
+    if (!form.policyNo.trim()) { setErr("Policy number is required."); return; }
+    if (!form.name.trim())     { setErr("Name is required."); return; }
+    if (!isEdit && existingPolicies.includes(form.policyNo.trim())) { setErr("A member with this policy number already exists."); return; }
+    onSave({ ...form, policyNo: form.policyNo.trim(), name: form.name.trim(), company: form.company.trim() });
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(27,42,65,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
+      <div style={{ background: "#fff", borderRadius: 12, width: 440, maxWidth: "90vw", padding: 26, maxHeight: "90vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 style={{ fontFamily: "'Spectral', serif", fontSize: 19, fontWeight: 600, margin: 0 }}>{isEdit ? "Edit member" : "Add member"}</h2>
+          <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer" }}><X size={18} /></button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 18 }}>
+          <Field label="Policy number">
+            <input
+              value={form.policyNo}
+              onChange={set("policyNo")}
+              style={{ ...input, fontFamily: "'IBM Plex Mono', monospace", ...(isEdit ? { background: "#F6F7F9", color: "#9AA2AB" } : {}) }}
+              placeholder="e.g. GNPC/2025/B"
+              readOnly={isEdit}
+            />
+            {isEdit && <span style={{ fontSize: 11, color: "#9AA2AB", marginTop: 1 }}>Policy number cannot be changed after creation.</span>}
+          </Field>
+
+          <Field label="Full name">
+            <input value={form.name} onChange={set("name")} style={input} placeholder="e.g. Sarjo Badjie" autoFocus={!isEdit} />
+          </Field>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <Field label="Company / employer" style={{ flex: 1 }}>
+              <input value={form.company} onChange={set("company")} style={input} placeholder="e.g. GNPC" />
+            </Field>
+            <Field label="Role on policy" style={{ flex: 1 }}>
+              <select value={form.role} onChange={set("role")} style={input}>
+                {ROLES_MEMBER.map((r) => <option key={r}>{r}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Status">
+            <select value={form.status} onChange={set("status")} style={input}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </select>
+          </Field>
+        </div>
+
+        {err && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12.5, fontWeight: 600, marginTop: 10 }}><AlertCircle size={13} />{err}</div>}
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
+          <button onClick={onClose} style={btnSecondary}>Cancel</button>
+          <button onClick={submit}  style={btnPrimary}>{isEdit ? <><Save size={13} style={{ marginRight: 5 }} />Save changes</> : <><Plus size={13} style={{ marginRight: 5 }} />Add member</>}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Members tab ────────────────────────────────────────────────────────────
+
+function MembersTab({ members, canEdit, query, setQuery, onAdd, onUpdate, onDelete }: {
+  members: Member[]; canEdit: boolean; query: string; setQuery: (q: string) => void;
+  onAdd: (f: MemberForm) => void; onUpdate: (id: string, f: MemberForm) => void; onDelete: (id: string) => void;
+}) {
+  const [showAdd,   setShowAdd]   = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const filtered = members.filter((m) =>
+    [m.policyNo, m.name, m.company].some((v) => v.toLowerCase().includes(query.toLowerCase()))
+  );
+  const editing = members.find((m) => m.id === editingId);
+  const existingPolicies = members.map((m) => m.policyNo);
+
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h1 style={{ fontFamily: "'Spectral', serif", fontSize: 26, fontWeight: 600, margin: 0 }}>Members</h1>
+          <p style={{ color: "#55606B", fontSize: 14, marginTop: 4 }}>Principals and dependents covered under insurance policies.</p>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ position: "relative" }}>
+            <Search size={14} style={{ position: "absolute", left: 10, top: 10, color: "#9AA2AB" }} />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Policy no, name, company" style={{ padding: "8px 10px 8px 30px", fontSize: 13, border: "1px solid #D7DBE0", borderRadius: 7, width: 230, fontFamily: "inherit" }} />
+          </div>
+          {canEdit && (
+            <button onClick={() => setShowAdd(true)} style={{ ...btnPrimary, display: "flex", alignItems: "center", gap: 6 }}>
+              <UserPlus size={14} /> Add member
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!canEdit && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, color: "#9AA2AB", fontSize: 12.5 }}><Lock size={12} /> View only — sign in to add or edit members.</div>}
+
+      <div style={{ marginTop: 16, background: "#fff", border: "1px solid #E3E6EA", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: canEdit ? "1.5fr 1.2fr 1fr 0.8fr 0.7fr 72px" : "1.5fr 1.2fr 1fr 0.8fr 0.7fr", padding: "10px 16px", fontSize: 11, fontWeight: 700, color: "#55606B", textTransform: "uppercase", letterSpacing: 0.3, borderBottom: "1px solid #E3E6EA" }}>
+          <div>Name</div><div>Policy number</div><div>Company</div><div>Role</div><div>Status</div>{canEdit && <div />}
+        </div>
+
+        {filtered.length === 0 && <div style={{ padding: 20 }}><EmptyNote text="No members match your search." /></div>}
+
+        {filtered.map((m) => (
+          <div key={m.id} style={{ display: "grid", gridTemplateColumns: canEdit ? "1.5fr 1.2fr 1fr 0.8fr 0.7fr 72px" : "1.5fr 1.2fr 1fr 0.8fr 0.7fr", padding: "12px 16px", fontSize: 13.5, borderBottom: "1px solid #F0F1F3", alignItems: "center" }}>
+            <div style={{ fontWeight: 600 }}>{m.name}</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12.5, color: "#3D7EA6", fontWeight: 600 }}>{m.policyNo}</div>
+            <div>{m.company}</div>
+            <div style={{ color: "#55606B" }}>{m.role}</div>
+            <div>
+              <Badge color={m.status === "Active" ? "#0E7A77" : "#C1483F"} bg={m.status === "Active" ? "#E4F3F1" : "#FBEBEA"}>{m.status}</Badge>
+            </div>
+            {canEdit && (
+              <div style={{ display: "flex", gap: 4 }}>
+                <button onClick={() => setEditingId(m.id)} style={{ border: "none", background: "none", color: "#3D7EA6", cursor: "pointer", padding: 4, display: "flex", borderRadius: 5 }} title="Edit">
+                  <Pencil size={14} />
+                </button>
+                <button onClick={() => { if (window.confirm(`Remove ${m.name} from the members list?`)) onDelete(m.id); }} style={{ border: "none", background: "none", color: "#C1483F", cursor: "pointer", padding: 4, display: "flex", borderRadius: 5 }} title="Remove">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {showAdd && (
+        <MemberModal
+          existingPolicies={existingPolicies}
+          onClose={() => setShowAdd(false)}
+          onSave={(f) => { onAdd(f); setShowAdd(false); }}
+        />
+      )}
+      {editing && (
+        <MemberModal
+          initial={editing}
+          existingPolicies={existingPolicies}
+          onClose={() => setEditingId(null)}
+          onSave={(f) => { onUpdate(editing.id, f); setEditingId(null); }}
+        />
+      )}
+    </>
+  );
+}
+
 // ── Login modal ────────────────────────────────────────────────────────────
 
 function LoginModal({ users, onClose, onSuccess }: { users: StaffUser[]; onClose: () => void; onSuccess: (u: StaffUser) => void }) {
@@ -122,8 +293,7 @@ function LoginModal({ users, onClose, onSuccess }: { users: StaffUser[]; onClose
 
   function submit() {
     const match = users.find((u) => u.username === username.trim() && u.password === password);
-    if (match) { onSuccess(match); }
-    else { setError("Incorrect username or password."); }
+    if (match) { onSuccess(match); } else { setError("Incorrect username or password."); }
   }
 
   return (
@@ -134,41 +304,22 @@ function LoginModal({ users, onClose, onSuccess }: { users: StaffUser[]; onClose
           <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer" }}><X size={18} /></button>
         </div>
         <p style={{ fontSize: 13, color: "#55606B", marginTop: 6 }}>Sign in with your Insurance Desk credentials.</p>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 18 }}>
           <Field label="Username">
-            <input
-              value={username}
-              onChange={(e) => { setUsername(e.target.value); setError(""); }}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-              autoFocus
-              placeholder="e.g. fatou"
-              style={inputStyle}
-            />
+            <input value={username} onChange={(e) => { setUsername(e.target.value); setError(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} autoFocus placeholder="e.g. fatou" style={input} />
           </Field>
           <Field label="Password">
             <PasswordInput value={password} onChange={(v) => { setPassword(v); setError(""); }} placeholder="••••••••" />
           </Field>
         </div>
-
-        {error && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12.5, fontWeight: 600, marginTop: 10 }}>
-            <AlertCircle size={13} /> {error}
-          </div>
-        )}
-
-        <button
-          onClick={submit}
-          style={{ marginTop: 18, width: "100%", border: "none", background: "#0E7A77", color: "#fff", borderRadius: 7, padding: "10px 14px", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
-        >
-          Sign in
-        </button>
+        {error && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12.5, fontWeight: 600, marginTop: 10 }}><AlertCircle size={13} />{error}</div>}
+        <button onClick={submit} style={{ ...btnPrimary, marginTop: 18, width: "100%", padding: "10px 14px", fontSize: 13.5 }}>Sign in</button>
       </div>
     </div>
   );
 }
 
-// ── Admin: manage staff panel ──────────────────────────────────────────────
+// ── Manage staff panel ─────────────────────────────────────────────────────
 
 function ManageStaffPanel({ users, onAdd, onRemove }: { users: StaffUser[]; onAdd: (u: Omit<StaffUser, "id" | "createdAt">) => void; onRemove: (id: string) => void }) {
   const [showForm, setShowForm] = useState(false);
@@ -181,11 +332,8 @@ function ManageStaffPanel({ users, onAdd, onRemove }: { users: StaffUser[]; onAd
     if (users.some((u) => u.username === form.username.trim())) { setErr("Username already exists."); return; }
     onAdd({ username: form.username.trim(), password: form.password, displayName: form.displayName.trim(), role: form.role });
     setForm({ username: "", password: "", displayName: "", role: "staff" });
-    setShowForm(false);
-    setErr("");
+    setShowForm(false); setErr("");
   }
-
-  const staffOnly = users.filter((u) => u.role !== "admin");
 
   return (
     <div>
@@ -194,10 +342,7 @@ function ManageStaffPanel({ users, onAdd, onRemove }: { users: StaffUser[]; onAd
           <h1 style={{ fontFamily: "'Spectral', serif", fontSize: 26, fontWeight: 600, margin: 0 }}>Staff accounts</h1>
           <p style={{ color: "#55606B", fontSize: 14, marginTop: 4 }}>Create and manage staff who can log and update requests.</p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          style={{ display: "flex", alignItems: "center", gap: 6, background: "#0E7A77", color: "#fff", border: "none", borderRadius: 7, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-        >
+        <button onClick={() => setShowForm((s) => !s)} style={{ ...btnPrimary, display: "flex", alignItems: "center", gap: 6 }}>
           <UserPlus size={14} /> Add staff
         </button>
       </div>
@@ -207,29 +352,18 @@ function ManageStaffPanel({ users, onAdd, onRemove }: { users: StaffUser[]; onAd
           <div style={{ fontSize: 13, fontWeight: 700, color: "#1B2A41", marginBottom: 14 }}>New staff account</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", gap: 10 }}>
-              <Field label="Display name" style={{ flex: 1 }}>
-                <input value={form.displayName} onChange={set("displayName")} style={inputStyle} placeholder="e.g. Fatou Jallow" />
-              </Field>
-              <Field label="Username" style={{ flex: 1 }}>
-                <input value={form.username} onChange={set("username")} style={inputStyle} placeholder="e.g. fatou" />
-              </Field>
+              <Field label="Display name" style={{ flex: 1 }}><input value={form.displayName} onChange={set("displayName")} style={input} placeholder="e.g. Fatou Jallow" /></Field>
+              <Field label="Username" style={{ flex: 1 }}><input value={form.username} onChange={set("username")} style={input} placeholder="e.g. fatou" /></Field>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <Field label="Password" style={{ flex: 1 }}>
-                <PasswordInput value={form.password} onChange={(v) => setForm((f) => ({ ...f, password: v }))} placeholder="Set a password" />
-              </Field>
-              <Field label="Role" style={{ flex: 1 }}>
-                <select value={form.role} onChange={set("role")} style={inputStyle}>
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </Field>
+              <Field label="Password" style={{ flex: 1 }}><PasswordInput value={form.password} onChange={(v) => setForm((f) => ({ ...f, password: v }))} placeholder="Set a password" /></Field>
+              <Field label="Role" style={{ flex: 1 }}><select value={form.role} onChange={set("role")} style={input}><option value="staff">Staff</option><option value="admin">Admin</option></select></Field>
             </div>
           </div>
           {err && <div style={{ color: "#C1483F", fontSize: 12, fontWeight: 600, marginTop: 8 }}>{err}</div>}
           <div style={{ display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }}>
-            <button onClick={() => { setShowForm(false); setErr(""); }} style={{ border: "1px solid #D7DBE0", background: "#fff", borderRadius: 7, padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-            <button onClick={submit} style={{ border: "none", background: "#0E7A77", color: "#fff", borderRadius: 7, padding: "7px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Create account</button>
+            <button onClick={() => { setShowForm(false); setErr(""); }} style={btnSecondary}>Cancel</button>
+            <button onClick={submit} style={btnPrimary}>Create account</button>
           </div>
         </div>
       )}
@@ -238,18 +372,14 @@ function ManageStaffPanel({ users, onAdd, onRemove }: { users: StaffUser[]; onAd
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 0.7fr 0.9fr 40px", padding: "10px 16px", fontSize: 11, fontWeight: 700, color: "#55606B", textTransform: "uppercase", letterSpacing: 0.3, borderBottom: "1px solid #E3E6EA" }}>
           <div>Name</div><div>Username</div><div>Role</div><div>Added</div><div />
         </div>
-        {staffOnly.length === 0 && <div style={{ padding: 20 }}><EmptyNote text="No staff accounts yet. Add one above." /></div>}
-        {staffOnly.map((u) => (
+        {users.filter((u) => u.role !== "admin").length === 0 && <div style={{ padding: 20 }}><EmptyNote text="No staff accounts yet." /></div>}
+        {users.filter((u) => u.role !== "admin").map((u) => (
           <div key={u.id} style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 0.7fr 0.9fr 40px", padding: "12px 16px", fontSize: 13.5, borderBottom: "1px solid #F0F1F3", alignItems: "center" }}>
             <div style={{ fontWeight: 600 }}>{u.displayName}</div>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", color: "#55606B" }}>{u.username}</div>
             <div><Badge color="#3D7EA6" bg="#EBF3F8">{u.role}</Badge></div>
             <div style={{ color: "#9AA2AB", fontSize: 12 }}>{u.createdAt}</div>
-            <div>
-              <button onClick={() => onRemove(u.id)} style={{ border: "none", background: "none", color: "#C1483F", cursor: "pointer", padding: 4, display: "flex" }}>
-                <Trash2 size={14} />
-              </button>
-            </div>
+            <div><button onClick={() => onRemove(u.id)} style={{ border: "none", background: "none", color: "#C1483F", cursor: "pointer", padding: 4, display: "flex" }}><Trash2 size={14} /></button></div>
           </div>
         ))}
       </div>
@@ -260,95 +390,98 @@ function ManageStaffPanel({ users, onAdd, onRemove }: { users: StaffUser[]; onAd
 // ── New request modal ──────────────────────────────────────────────────────
 
 function NewRequestModal({ members, onClose, onSubmit }: { members: Member[]; onClose: () => void; onSubmit: (f: Omit<Request, "id" | "stage">) => void }) {
-  const [form, setForm] = useState({ company: "GNPC", type: REQUEST_TYPES[0], memberName: "", memberId: "", reason: "", notes: "", dateReceived: new Date().toISOString().slice(0, 10) });
-  const [idSuggestions, setIdSuggestions] = useState<Member[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [form, setForm] = useState({ company: "GNPC", type: REQUEST_TYPES[0], memberName: "", policyNo: "", reason: "", notes: "", dateReceived: new Date().toISOString().slice(0, 10) });
+  const [suggestions, setSuggestions] = useState<Member[]>([]);
+  const [showSugg, setShowSugg]       = useState(false);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const needsExisting = form.type === "Remove dependent" || form.type === "Reinstate";
   const needsNew      = form.type === "Add dependent";
-  const matched       = members.find((m) => m.id === form.memberId);
-  const idExists      = needsNew      && !!matched;
-  const idMissing     = needsExisting && form.memberId.length > 0 && !matched;
-  const canSubmit     = !!form.memberName && !!form.memberId && !idExists;
+  const matched       = members.find((m) => m.policyNo === form.policyNo);
+  const policyExists  = needsNew      && !!matched;
+  const policyMissing = needsExisting && form.policyNo.length > 0 && !matched;
+  const canSubmit     = !!form.memberName && !!form.policyNo && !policyExists;
 
-  function handleIdChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handlePolicyChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
-    setForm((f) => ({ ...f, memberId: val }));
+    setForm((f) => ({ ...f, policyNo: val }));
     if (needsExisting && val.length > 0) {
-      const hits = members.filter((m) => m.id.toLowerCase().includes(val.toLowerCase()) || m.name.toLowerCase().includes(val.toLowerCase()));
-      setIdSuggestions(hits);
-      setShowSuggestions(hits.length > 0);
-    } else { setShowSuggestions(false); }
+      const hits = members.filter((m) => m.policyNo.toLowerCase().includes(val.toLowerCase()) || m.name.toLowerCase().includes(val.toLowerCase()));
+      setSuggestions(hits); setShowSugg(hits.length > 0);
+    } else { setShowSugg(false); }
   }
 
   function pickSuggestion(m: Member) {
-    setForm((f) => ({ ...f, memberId: m.id, memberName: m.name, company: m.company }));
-    setShowSuggestions(false);
+    setForm((f) => ({ ...f, policyNo: m.policyNo, memberName: m.name, company: m.company }));
+    setShowSugg(false);
   }
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(27,42,65,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
-      <div style={{ background: "#fff", borderRadius: 12, width: 460, maxWidth: "90vw", padding: 24, maxHeight: "90vh", overflowY: "auto" }}>
+      <div style={{ background: "#fff", borderRadius: 12, width: 480, maxWidth: "90vw", padding: 24, maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ fontFamily: "'Spectral', serif", fontSize: 19, fontWeight: 600, margin: 0 }}>Log a request</h2>
           <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer" }}><X size={18} /></button>
         </div>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
           <Field label="Request type">
-            <select value={form.type} onChange={(e) => { setForm((f) => ({ ...f, type: e.target.value, memberId: "", memberName: "" })); setShowSuggestions(false); }} style={inputStyle}>
+            <select value={form.type} onChange={(e) => { setForm((f) => ({ ...f, type: e.target.value, policyNo: "", memberName: "" })); setShowSugg(false); }} style={input}>
               {REQUEST_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </Field>
           <Field label="Insurance company">
-            <input value={form.company} onChange={set("company")} style={inputStyle} />
+            <input value={form.company} onChange={set("company")} style={input} />
           </Field>
-          <div style={{ display: "flex", gap: 10 }}>
-            <Field label="Member name" style={{ flex: 1 }}>
-              <input value={form.memberName} onChange={set("memberName")} style={inputStyle} placeholder="e.g. Sarjo Badjie" />
-            </Field>
-            <Field label="Member ID" style={{ flex: 1, position: "relative" }}>
-              <input
-                value={form.memberId}
-                onChange={handleIdChange}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                onFocus={() => { if (needsExisting && form.memberId.length > 0 && idSuggestions.length > 0) setShowSuggestions(true); }}
-                style={{ ...inputStyle, borderColor: idMissing || idExists ? "#C1483F" : "#D7DBE0" }}
-                placeholder="e.g. 2025/B"
-              />
-              {showSuggestions && (
-                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #D7DBE0", borderRadius: 7, boxShadow: "0 4px 12px rgba(27,42,65,0.12)", zIndex: 30, marginTop: 2, overflow: "hidden" }}>
-                  {idSuggestions.map((m) => (
-                    <button key={m.id} onMouseDown={() => pickSuggestion(m)} style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 12px", border: "none", background: "none", borderBottom: "1px solid #F0F1F3", fontSize: 12.5, cursor: "pointer" }}>
-                      <span style={{ fontWeight: 700 }}>{m.id}</span>
-                      <span style={{ color: "#55606B", marginLeft: 8 }}>{m.name}</span>
-                      <span style={{ float: "right", fontSize: 11, fontWeight: 700, color: m.status === "Active" ? "#0E7A77" : "#C1483F" }}>{m.status}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </Field>
-          </div>
-          {idMissing && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12, fontWeight: 600, marginTop: -4 }}><AlertCircle size={12} />No member with this ID — check the Members list.</div>}
-          {idExists  && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12, fontWeight: 600, marginTop: -4 }}><AlertCircle size={12} />ID {form.memberId} already exists ({matched!.name}). Use a new ID.</div>}
+
+          {/* Policy number with autocomplete for existing-member types */}
+          <Field label="Policy number" style={{ position: "relative" }}>
+            <input
+              value={form.policyNo}
+              onChange={handlePolicyChange}
+              onBlur={() => setTimeout(() => setShowSugg(false), 150)}
+              onFocus={() => { if (needsExisting && form.policyNo.length > 0 && suggestions.length > 0) setShowSugg(true); }}
+              style={{ ...input, fontFamily: "'IBM Plex Mono', monospace", borderColor: policyMissing || policyExists ? "#C1483F" : "#D7DBE0" }}
+              placeholder="e.g. GNPC/2025/B"
+            />
+            {showSugg && (
+              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #D7DBE0", borderRadius: 7, boxShadow: "0 4px 12px rgba(27,42,65,0.12)", zIndex: 30, marginTop: 2, overflow: "hidden" }}>
+                {suggestions.map((m) => (
+                  <button key={m.id} onMouseDown={() => pickSuggestion(m)} style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 12px", border: "none", background: "none", borderBottom: "1px solid #F0F1F3", fontSize: 12.5, cursor: "pointer" }}>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700, color: "#3D7EA6" }}>{m.policyNo}</span>
+                    <span style={{ color: "#55606B", marginLeft: 10 }}>{m.name}</span>
+                    <span style={{ float: "right", fontSize: 11, fontWeight: 700, color: m.status === "Active" ? "#0E7A77" : "#C1483F" }}>{m.status}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </Field>
+
+          {policyMissing && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12, fontWeight: 600, marginTop: -4 }}><AlertCircle size={12} />No member found with this policy number.</div>}
+          {policyExists  && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C1483F", fontSize: 12, fontWeight: 600, marginTop: -4 }}><AlertCircle size={12} />Policy number {form.policyNo} already exists ({matched!.name}). Use a new one.</div>}
+
+          <Field label="Member name">
+            <input value={form.memberName} onChange={set("memberName")} style={input} placeholder="e.g. Sarjo Badjie" />
+          </Field>
           <Field label="Reason">
-            <input value={form.reason} onChange={set("reason")} style={inputStyle} placeholder="e.g. Exceeded age limit under policy" />
+            <input value={form.reason} onChange={set("reason")} style={input} placeholder="e.g. Exceeded age limit under policy" />
           </Field>
           <Field label="Notes (optional)">
-            <textarea value={form.notes} onChange={set("notes")} style={{ ...inputStyle, minHeight: 56, resize: "vertical" }} />
+            <textarea value={form.notes} onChange={set("notes")} style={{ ...input, minHeight: 56, resize: "vertical" }} />
           </Field>
         </div>
+
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
-          <button onClick={onClose} style={{ border: "1px solid #D7DBE0", background: "#fff", borderRadius: 7, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-          <button disabled={!canSubmit} onClick={() => onSubmit(form)} style={{ border: "none", background: !canSubmit ? "#A9C9C7" : "#0E7A77", color: "#fff", borderRadius: 7, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: canSubmit ? "pointer" : "default" }}>Log request</button>
+          <button onClick={onClose} style={btnSecondary}>Cancel</button>
+          <button disabled={!canSubmit} onClick={() => onSubmit(form)} style={{ ...btnPrimary, background: !canSubmit ? "#A9C9C7" : "#0E7A77", cursor: canSubmit ? "pointer" : "default" }}>Log request</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Supporting pieces ──────────────────────────────────────────────────────
+// ── Request pieces ─────────────────────────────────────────────────────────
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
@@ -369,10 +502,10 @@ function TopBar({ title, subtitle, query, setQuery, actionLabel, onAction }: { t
       <div style={{ display: "flex", gap: 10 }}>
         <div style={{ position: "relative" }}>
           <Search size={14} style={{ position: "absolute", left: 10, top: 10, color: "#9AA2AB" }} />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, ID, company" style={{ padding: "8px 10px 8px 30px", fontSize: 13, border: "1px solid #D7DBE0", borderRadius: 7, width: 220, fontFamily: "inherit" }} />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, policy, company" style={{ padding: "8px 10px 8px 30px", fontSize: 13, border: "1px solid #D7DBE0", borderRadius: 7, width: 230, fontFamily: "inherit" }} />
         </div>
         {actionLabel && (
-          <button onClick={onAction} style={{ display: "flex", alignItems: "center", gap: 6, background: "#0E7A77", color: "#fff", border: "none", borderRadius: 7, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={onAction} style={{ ...btnPrimary, display: "flex", alignItems: "center", gap: 6 }}>
             <Plus size={14} /> {actionLabel}
           </button>
         )}
@@ -387,7 +520,10 @@ function RequestRow({ r, onClick }: { r: Request; onClick: () => void }) {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <StageRail stage={r.stage} compact />
         <div>
-          <div style={{ fontWeight: 700, fontSize: 13.5 }}>{r.memberName} <span style={{ color: "#9AA2AB", fontWeight: 500 }}>· {r.memberId}</span></div>
+          <div style={{ fontWeight: 700, fontSize: 13.5 }}>
+            {r.memberName}
+            <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#3D7EA6", fontWeight: 600, marginLeft: 8 }}>{r.policyNo}</span>
+          </div>
           <div style={{ fontSize: 12, color: "#55606B", marginTop: 1 }}>{r.type} — {r.company}</div>
         </div>
       </div>
@@ -409,17 +545,19 @@ function RequestDetail({ r, canEdit, onBack, onAdvance }: { r: Request; canEdit:
           <div>
             <div style={{ fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", color: "#9AA2AB" }}>{r.id}</div>
             <h2 style={{ fontFamily: "'Spectral', serif", fontSize: 22, fontWeight: 600, margin: "4px 0" }}>{r.type} — {r.memberName}</h2>
-            <div style={{ fontSize: 13, color: "#55606B" }}>{r.company} · Member ID {r.memberId} · received {r.dateReceived}</div>
+            <div style={{ fontSize: 13, color: "#55606B" }}>
+              {r.company} ·
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: "#3D7EA6", fontWeight: 600, marginLeft: 5 }}>{r.policyNo}</span>
+              · received {r.dateReceived}
+            </div>
           </div>
           {!isFinal && canEdit && (
-            <button onClick={onAdvance} style={{ background: "#0E7A77", color: "#fff", border: "none", borderRadius: 7, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={onAdvance} style={{ ...btnPrimary, padding: "9px 16px" }}>
               Mark as {STAGES[STAGES.indexOf(r.stage) + 1]}
             </button>
           )}
           {!isFinal && !canEdit && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#9AA2AB", fontSize: 12.5 }}>
-              <Lock size={12} /> Sign in to update
-            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#9AA2AB", fontSize: 12.5 }}><Lock size={12} /> Sign in to update</div>
           )}
         </div>
         <div style={{ marginTop: 28, padding: "18px 10px", background: "#FAFBFC", borderRadius: 10 }}><StageRail stage={r.stage} /></div>
@@ -455,10 +593,10 @@ export function InsuranceDesk() {
   const isAdmin = currentUser?.role === "admin";
   const canEdit = !!currentUser;
 
-  const pending          = requests.filter((r) => r.stage !== "Confirmed").length;
-  const confirmedCount   = requests.filter((r) => r.stage === "Confirmed").length;
-  const activeMembers    = members.filter((m) => m.status === "Active").length;
-  const inactiveMembers  = members.filter((m) => m.status === "Inactive").length;
+  const pending         = requests.filter((r) => r.stage !== "Confirmed").length;
+  const confirmedCount  = requests.filter((r) => r.stage === "Confirmed").length;
+  const activeMembers   = members.filter((m) => m.status === "Active").length;
+  const inactiveMembers = members.filter((m) => m.status === "Inactive").length;
 
   function advanceStage(reqId: string) {
     setRequests((prev) =>
@@ -466,9 +604,9 @@ export function InsuranceDesk() {
         if (r.id !== reqId) return r;
         const idx  = STAGES.indexOf(r.stage);
         const next = STAGES[Math.min(idx + 1, STAGES.length - 1)];
-        if (next === "Actioned" && r.type === "Remove dependent") setMembers((ms) => ms.map((m) => m.id === r.memberId ? { ...m, status: "Inactive" } : m));
-        if (next === "Actioned" && r.type === "Reinstate")        setMembers((ms) => ms.map((m) => m.id === r.memberId ? { ...m, status: "Active"   } : m));
-        if (next === "Actioned" && r.type === "Add dependent")    setMembers((ms) => ms.some((m) => m.id === r.memberId) ? ms : [...ms, { id: r.memberId, name: r.memberName, company: r.company, role: "Dependent", status: "Active" }]);
+        if (next === "Actioned" && r.type === "Remove dependent") setMembers((ms) => ms.map((m) => m.policyNo === r.policyNo ? { ...m, status: "Inactive" } : m));
+        if (next === "Actioned" && r.type === "Reinstate")        setMembers((ms) => ms.map((m) => m.policyNo === r.policyNo ? { ...m, status: "Active"   } : m));
+        if (next === "Actioned" && r.type === "Add dependent")    setMembers((ms) => ms.some((m) => m.policyNo === r.policyNo) ? ms : [...ms, { id: `m-${Date.now()}`, policyNo: r.policyNo, name: r.memberName, company: r.company, role: "Dependent", status: "Active" }]);
         return { ...r, stage: next };
       })
     );
@@ -483,17 +621,14 @@ export function InsuranceDesk() {
   function signOut() { setCurrentUser(null); setTab("overview"); setSelected(null); }
 
   const navItems = [
-    { key: "overview",  label: "Overview",  icon: LayoutGrid },
-    { key: "requests",  label: "Requests",  icon: FileText   },
-    { key: "members",   label: "Members",   icon: Users      },
+    { key: "overview", label: "Overview",       icon: LayoutGrid  },
+    { key: "requests", label: "Requests",       icon: FileText    },
+    { key: "members",  label: "Members",        icon: Users       },
     ...(isAdmin ? [{ key: "staff", label: "Staff accounts", icon: ShieldCheck }] : []),
   ];
 
   const filteredRequests = requests.filter((r) =>
-    [r.memberName, r.memberId, r.company].some((v) => v.toLowerCase().includes(query.toLowerCase()))
-  );
-  const filteredMembers = members.filter((m) =>
-    [m.name, m.id, m.company].some((v) => v.toLowerCase().includes(query.toLowerCase()))
+    [r.memberName, r.policyNo, r.company].some((v) => v.toLowerCase().includes(query.toLowerCase()))
   );
 
   return (
@@ -529,9 +664,7 @@ export function InsuranceDesk() {
         <div style={{ marginTop: "auto", paddingTop: 24 }}>
           {currentUser ? (
             <div style={{ padding: "10px 12px", background: "rgba(14,122,119,0.18)", borderRadius: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#6FD6D1", fontSize: 12, fontWeight: 700 }}>
-                <Unlock size={13} /> {currentUser.displayName}
-              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#6FD6D1", fontSize: 12, fontWeight: 700 }}><Unlock size={13} />{currentUser.displayName}</div>
               <div style={{ fontSize: 11, color: "#93A0B4", marginTop: 2 }}>{currentUser.role === "admin" ? "Administrator" : "Staff"}</div>
               <button onClick={signOut} style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 8, border: "none", background: "none", color: "#B8C1CE", fontSize: 11.5, fontWeight: 600, padding: 0 }}>
                 <LogOut size={12} /> Sign out
@@ -545,7 +678,7 @@ export function InsuranceDesk() {
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main */}
       <div style={{ flex: 1, padding: "26px 34px", maxWidth: 1100, overflowY: "auto" }}>
 
         {tab === "overview" && (
@@ -584,24 +717,15 @@ export function InsuranceDesk() {
         )}
 
         {tab === "members" && (
-          <>
-            <TopBar title="Members" subtitle="Principals and dependents covered under insurance policies." query={query} setQuery={setQuery} actionLabel={null} />
-            <div style={{ marginTop: 16, background: "#fff", border: "1px solid #E3E6EA", borderRadius: 10, overflow: "hidden" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 0.8fr", padding: "10px 16px", fontSize: 11, fontWeight: 700, color: "#55606B", textTransform: "uppercase", letterSpacing: 0.3, borderBottom: "1px solid #E3E6EA" }}>
-                <div>Name</div><div>ID</div><div>Company</div><div>Role</div><div>Status</div>
-              </div>
-              {filteredMembers.length === 0 && <div style={{ padding: 20 }}><EmptyNote text="No members match your search." /></div>}
-              {filteredMembers.map((m) => (
-                <div key={m.id} style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 0.8fr", padding: "12px 16px", fontSize: 13.5, borderBottom: "1px solid #F0F1F3", alignItems: "center" }}>
-                  <div style={{ fontWeight: 600 }}>{m.name}</div>
-                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", color: "#55606B" }}>{m.id}</div>
-                  <div>{m.company}</div>
-                  <div style={{ color: "#55606B" }}>{m.role}</div>
-                  <div><Badge color={m.status === "Active" ? "#0E7A77" : "#C1483F"} bg={m.status === "Active" ? "#E4F3F1" : "#FBEBEA"}>{m.status}</Badge></div>
-                </div>
-              ))}
-            </div>
-          </>
+          <MembersTab
+            members={members}
+            canEdit={canEdit}
+            query={query}
+            setQuery={setQuery}
+            onAdd={(f) => setMembers((prev) => [...prev, { ...f, id: `m-${Date.now()}` }])}
+            onUpdate={(id, f) => setMembers((prev) => prev.map((m) => m.id === id ? { ...m, ...f } : m))}
+            onDelete={(id) => setMembers((prev) => prev.filter((m) => m.id !== id))}
+          />
         )}
 
         {tab === "staff" && isAdmin && (
