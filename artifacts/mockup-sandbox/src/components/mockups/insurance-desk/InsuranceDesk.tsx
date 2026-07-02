@@ -208,7 +208,7 @@ function MembersTab({ members, canEdit, query, setQuery, onAdd, onUpdate, onDele
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const filtered = members.filter((m) =>
-    [m.policyNo, m.name, m.company].some((v) => v.toLowerCase().includes(query.toLowerCase()))
+    [m.policyNo, m.name, m.company].some((v) => (v ?? "").toLowerCase().includes(query.toLowerCase()))
   );
   const editing = members.find((m) => m.id === editingId);
   const existingPolicies = members.map((m) => m.policyNo);
