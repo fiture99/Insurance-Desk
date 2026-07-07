@@ -24,14 +24,29 @@ const seedUsers: StaffUser[] = [
 ];
 
 const seedMembers: Member[] = [
-  { id: "m-1", policyNo: "GNPC/2025/B", name: "Sarjo Badjie",     insurer: "Sunshine Insurance", employer: "GNPC", role: "Dependent", status: "Active",   phone: "+220 999 1234", dob: "2001-03-14" },
-  { id: "m-2", policyNo: "GNPC/2154/B", name: "Asmaw K. Sanyang", insurer: "Sunshine Insurance", employer: "GNPC", role: "Dependent", status: "Active",   phone: "+220 772 5566", dob: "1998-07-22" },
-  { id: "m-3", policyNo: "GNPC/1180/P", name: "Momodou Ceesay",   insurer: "Sunshine Insurance", employer: "GNPC", role: "Principal", status: "Active",   phone: "+220 990 4321", dob: "1975-11-05" },
+  { id: "3286/P", policyNo: "POL-87397", name: "Mr Sherifo Sanyang",         insurer: "Horizon Health Assurance",  employer: "Standard Chartered",               role: "Principal", status: "Active", phone: "5539336", dob: "" },
+  { id: "7924/B", policyNo: "POL-54118", name: "Miss Fatou Sambou",           insurer: "Sunu Assurances",           employer: "National Water & Electricity Co.", role: "Principal", status: "Active", phone: "2857401", dob: "" },
+  { id: "8517/P", policyNo: "POL-83579", name: "Mr Lamin Manneh",             insurer: "Sunu Assurances",           employer: "National Water & Electricity Co.", role: "Principal", status: "Active", phone: "6521269", dob: "" },
+  { id: "2796/P", policyNo: "POL-88172", name: "Mrs Valarie Jennifer Manneh", insurer: "Prudential Life Gambia",    employer: "National Water & Electricity Co.", role: "Principal", status: "Active", phone: "2532909", dob: "" },
+  { id: "9797/B", policyNo: "POL-48469", name: "Mrs Haddy Sambou",            insurer: "Horizon Health Assurance",  employer: "Gam Petroleum",                   role: "Principal", status: "Active", phone: "5647075", dob: "" },
+  { id: "9689/P", policyNo: "POL-12552", name: "Mrs Sira Mundow Jatta",       insurer: "Prudential Life Gambia",    employer: "Gam Petroleum",                   role: "Principal", status: "Active", phone: "2938414", dob: "" },
+  { id: "1964/P", policyNo: "POL-19287", name: "Mr Lamin Badjie",             insurer: "Continental Health Cover",  employer: "GNPC",                            role: "Principal", status: "Active", phone: "6313054", dob: "" },
+  { id: "2612/P", policyNo: "POL-24322", name: "Miss Mariama Darboe",         insurer: "Continental Health Cover",  employer: "Standard Chartered",              role: "Principal", status: "Active", phone: "4085880", dob: "" },
+  { id: "1035/B", policyNo: "POL-47388", name: "Miss Fatou Camara",           insurer: "Prudential Life Gambia",    employer: "Gambia Ports Authority",          role: "Principal", status: "Active", phone: "5548443", dob: "" },
+  { id: "8811/P", policyNo: "POL-34356", name: "Miss Virone Vatnani",         insurer: "Horizon Health Assurance",  employer: "Access Bank",                     role: "Principal", status: "Active", phone: "2574798", dob: "" },
+  { id: "2343/B", policyNo: "POL-44179", name: "Mrs Varsha Badjie",           insurer: "Continental Health Cover",  employer: "Access Bank",                     role: "Principal", status: "Active", phone: "3713450", dob: "" },
+  { id: "2753/P", policyNo: "POL-54942", name: "Mr Momodou Sanyang",          insurer: "Sunu Assurances",           employer: "Gam Petroleum",                   role: "Principal", status: "Active", phone: "3707898", dob: "" },
+  { id: "5533/P", policyNo: "POL-93507", name: "Mrs Fatou Vatnani",           insurer: "Sunu Assurances",           employer: "Gam Petroleum",                   role: "Principal", status: "Active", phone: "4197440", dob: "" },
+  { id: "6050/B", policyNo: "POL-99399", name: "Mr Momodou Sonko",            insurer: "Sunu Assurances",           employer: "Gam Petroleum",                   role: "Principal", status: "Active", phone: "4093207", dob: "" },
+  { id: "8541/B", policyNo: "POL-39219", name: "Miss Fatou Vatnani",          insurer: "Sunu Assurances",           employer: "Gambia Ports Authority",          role: "Principal", status: "Active", phone: "2198511", dob: "" },
+  { id: "4114/B", policyNo: "POL-10221", name: "Mr Ousman Njie",              insurer: "Prudential Life Gambia",    employer: "Standard Chartered",              role: "Principal", status: "Active", phone: "6361407", dob: "" },
+  { id: "7211/P", policyNo: "POL-63225", name: "Mrs Mariama Jallow",          insurer: "Continental Health Cover",  employer: "Access Bank",                     role: "Principal", status: "Active", phone: "6596430", dob: "" },
 ];
 
 const seedRequests: Request[] = [
-  { id: "REQ-1001", insurer: "Sunshine Insurance", type: "Remove dependent", memberName: "Sarjo Badjie",     policyNo: "GNPC/2025/B", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received", notes: "Formal letter to follow. Email treated as authorization." },
-  { id: "REQ-1002", insurer: "Sunshine Insurance", type: "Remove dependent", memberName: "Asmaw K. Sanyang", policyNo: "GNPC/2154/B", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received", notes: "Formal letter to follow. Email treated as authorization." },
+  { id: "REQ-1001", insurer: "Horizon Health Assurance", type: "Remove dependent", memberName: "Mrs Haddy Sambou",    policyNo: "POL-48469", reason: "Exceeded age limit under policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received",  notes: "Formal letter to follow. Email treated as authorization." },
+  { id: "REQ-1002", insurer: "Sunu Assurances",          type: "Update details",   memberName: "Mr Lamin Manneh",     policyNo: "POL-83579", reason: "Phone number change",             dateReceived: new Date().toISOString().slice(0, 10), stage: "Reviewed",  notes: "Member called in. New number to be confirmed with employer." },
+  { id: "REQ-1003", insurer: "Continental Health Cover", type: "Add dependent",    memberName: "Mrs Mariama Jallow",  policyNo: "POL-63225", reason: "New spouse to be added to policy", dateReceived: new Date().toISOString().slice(0, 10), stage: "Received",  notes: "Marriage certificate received via email." },
 ];
 
 // ── Constants ──────────────────────────────────────────────────────────────
