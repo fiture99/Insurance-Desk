@@ -27,6 +27,19 @@ Currently a working front-end mockup/prototype, previewed on the canvas at `arti
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 
+### Running the full downloaded project on your own laptop
+
+This is a pnpm monorepo built for Replit's workflow system, which normally supplies `PORT`/`BASE_PATH` env vars automatically per artifact. To run it standalone:
+
+1. Install **Node.js 24** and **pnpm** (`corepack enable` usually gives you pnpm, or `npm install -g pnpm`).
+2. From the project root, install dependencies once: `pnpm install`
+3. The Insurance Desk prototype lives in the mockup-sandbox artifact. Start it directly with the required env vars:
+   ```bash
+   PORT=5173 BASE_PATH=/ pnpm --filter @workspace/mockup-sandbox run dev
+   ```
+4. Open **`http://localhost:5173/preview/insurance-desk/InsuranceDesk`** in your browser — that's the working app.
+5. The `api-server` and database are not required to view/use the Insurance Desk prototype yet, since it currently runs entirely on in-memory mock data. You only need those once the app graduates to a real backend (would then also require a `DATABASE_URL`).
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
