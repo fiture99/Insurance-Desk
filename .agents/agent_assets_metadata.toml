@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "oOJpClVw_mpDf8ZyX31HA"
+uri = "file://exports/insurance-desk-standalone.zip"
+type = "unspecified"
+title = "AfricMed Insurance Desk (standalone project)"
