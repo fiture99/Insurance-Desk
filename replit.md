@@ -68,6 +68,14 @@ No tables exist yet (`lib/db/src/schema/index.ts` is still empty), so this is on
 
 Whenever you add new tables to `lib/db/src/schema`, re-run step 4 to sync your local database.
 
+### Using a `.env` file locally
+
+Copy `.env.example` (project root) to `.env` and fill in your values — `DATABASE_URL` and `PORT` are picked up automatically by the `api-server` and `db` packages (they load `.env` via `dotenv` on startup). This only matters when running outside Replit; inside Replit these env vars are already injected by the platform and `.env` is not used.
+
+Note: Vite (the `mockup-sandbox` dev server) does **not** read the root `.env` — it only reads `.env`/`.env.local` from its own package directory (`artifacts/mockup-sandbox/`). Either put a `.env.local` there with `PORT`/`BASE_PATH`, or keep passing them inline as shown above.
+
+`.env` is gitignored — never commit real credentials to it.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
