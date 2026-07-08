@@ -52,6 +52,22 @@ Then check it responds: `curl http://localhost:5000/api/healthz` → `{"status":
 
 Once the app grows real routes backed by the database (member/request CRUD), you'll additionally need a Postgres instance and a `DATABASE_URL` env var pointing to it before running `pnpm --filter @workspace/api-server run dev`.
 
+### Setting up a local database (Postgres)
+
+No tables exist yet (`lib/db/src/schema/index.ts` is still empty), so this is only needed once you start adding real schema/routes. To set one up on your laptop:
+
+1. Install Postgres locally (e.g. `brew install postgresql@16` on Mac, or use the official installer on Windows/Linux) and make sure the Postgres server is running.
+2. Create a database, e.g.: `createdb insurance_desk`
+3. Set the `DATABASE_URL` env var in your shell (or a `.env` you load yourself), pointing at that database:
+   ```bash
+   export DATABASE_URL="postgresql://<user>:<password>@localhost:5432/insurance_desk"
+   ```
+   On most local installs the default user has no password and is your OS username, e.g. `postgresql://localhost:5432/insurance_desk`.
+4. Push the current schema to it: `pnpm --filter @workspace/db run push` (run this from the project root, with `DATABASE_URL` set in that shell session).
+5. Then start the backend with the same `DATABASE_URL` set: `PORT=5000 DATABASE_URL="postgresql://localhost:5432/insurance_desk" pnpm --filter @workspace/api-server run dev`
+
+Whenever you add new tables to `lib/db/src/schema`, re-run step 4 to sync your local database.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
