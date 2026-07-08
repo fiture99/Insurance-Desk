@@ -40,6 +40,18 @@ This is a pnpm monorepo built for Replit's workflow system, which normally suppl
 4. Open **`http://localhost:5173/preview/insurance-desk/InsuranceDesk`** in your browser — that's the working app.
 5. The `api-server` and database are not required to view/use the Insurance Desk prototype yet, since it currently runs entirely on in-memory mock data. You only need those once the app graduates to a real backend (would then also require a `DATABASE_URL`).
 
+### Running the backend (api-server) locally
+
+The backend currently only exposes a `/api/healthz` check — it doesn't touch the database yet, so you can run it standalone without `DATABASE_URL` for now:
+
+```bash
+PORT=5000 pnpm --filter @workspace/api-server run dev
+```
+
+Then check it responds: `curl http://localhost:5000/api/healthz` → `{"status":"ok"}`.
+
+Once the app grows real routes backed by the database (member/request CRUD), you'll additionally need a Postgres instance and a `DATABASE_URL` env var pointing to it before running `pnpm --filter @workspace/api-server run dev`.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
