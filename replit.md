@@ -50,6 +50,8 @@ PORT=5000 pnpm --filter @workspace/api-server run dev
 
 Then check it responds: `curl http://localhost:5000/api/healthz` → `{"status":"ok"}`.
 
+**Windows note:** the `dev` script uses `cross-env` (not shell `export`), so `pnpm --filter @workspace/api-server run dev` works as-is in PowerShell/cmd. Inline `PORT=5000 pnpm run ...` syntax does NOT work in PowerShell though — on Windows, set `PORT` (and `DATABASE_URL`) in a `.env` file instead (see below) so you can just run `pnpm --filter @workspace/api-server run dev` with no inline vars, or use `$env:PORT=5000; pnpm --filter @workspace/api-server run dev`.
+
 Once the app grows real routes backed by the database (member/request CRUD), you'll additionally need a Postgres instance and a `DATABASE_URL` env var pointing to it before running `pnpm --filter @workspace/api-server run dev`.
 
 ### Setting up a local database (Postgres)
